@@ -1,72 +1,109 @@
 # Technical Specification: Bank Account and Financial Transactions Management System
 
 ## Project Objective
-To develop a secure, modern system that allows bank users to create accounts, monitor balances, and perform financial transactions (e.g., deposits, withdrawals, transfers) efficiently in a unified platform.
+Develop a secure, high-performance system enabling users to manage accounts, monitor balances, and perform financial transactions, with robust infrastructure using Redis, RabbitMQ, Liquibase, and Docker.
 
 ## General Requirements
-- **Programming Language**: Java (using the Spring Boot framework)
+- **Programming Language**: Java (using Spring Boot framework)
 - **Architecture**: Monolithic architecture
-- **Database**: PostgreSQL
-- **Authentication & Authorization**: Spring Security with JWT (JSON Web Token)
+- **Database**: PostgreSQL with Liquibase for version control
+- **Caching**: Redis for improved performance
+- **Messaging**: RabbitMQ for asynchronous communication
+- **Containerization**: Docker for environment consistency and simplified deployment
+- **Authentication & Authorization**: Spring Security with JWT
 - **API Documentation**: Swagger or OpenAPI
 
 ## Core Modules
 
 ### 1. User and Authentication Module
-- **User Registration**: Enables new users to sign up and log in.
-- **Authorization**: Role-based access control for admin and user roles.
-- **Authentication**: Secures login sessions with JWT.
-- **Two-Factor Authentication (Optional)**: Adds an extra layer of security with SMS or Email verification.
+- **User Registration and Login**: New user registration with JWT authentication.
+- **Authorization**: Role-based access control for different user types (admin and user roles).
+- **Two-Factor Authentication (Optional)**: Extra layer of security using email/SMS verification.
 
 ### 2. Account Management Module
-- **Account Creation**: Allows creation of new accounts (e.g., checking and savings accounts).
-- **Account Details Viewing**: Displays account number, type, balance, and other details.
-- **Transaction History**: Logs transaction history for each account and displays it to the user.
+- **Account Creation and Viewing**: Create accounts (checking/savings) and view account details and balances.
+- **Transaction History**: Logs transactions with history accessible to users.
 
 ### 3. Financial Transactions Module
-- **Deposit and Withdrawal**: Enables users to deposit into and withdraw funds from their accounts.
-- **Fund Transfers**:
-  - **Internal Transfers**: Transfers between accounts within the same bank.
-  - **External Transfers**: Transfers to accounts in other banks.
-- **Balance Check**: Verifies sufficient funds before a transaction is initiated.
+- **Deposit, Withdrawal, and Transfers**:
+  - **Internal Transfers**: Between bank accounts within the system.
+  - **External Transfers**: To accounts in other banks.
+- **Balance Verification**: Ensures sufficient funds before initiating transactions.
 
 ### 4. Fraud and Security Monitoring Module
-- **Anomaly Detection**: Identifies and blocks suspicious transactions.
-- **Security Alerts**: Sends alerts to users when suspicious activity, such as failed login attempts, is detected.
+- **Anomaly Detection**: Detects suspicious activity through predefined rules.
+- **Security Alerts**: Notifies users of unusual account activity.
 
 ### 5. Notification Module
-- **Transaction Notifications**: Sends alerts to users via SMS or Email for key transactions like deposits, withdrawals, and transfers.
-- **Security Alerts**: Notifies users of suspicious activity in real-time.
+- **Transaction and Security Notifications**: Notifies users via SMS/Email about transaction and security events.
 
 ### 6. Admin Panel
-- **User and Account Monitoring**: Allows administrators to review and manage user accounts and transactions, with options to block or deactivate accounts if needed.
-- **Reports**: Generates statistics and reports on transaction history, balance summaries, and flagged suspicious activity.
+- **User Management**: Monitors users, manages accounts, and has options to block/deactivate accounts.
+- **Reports**: Generates reports for admins on account activities, suspicious transactions, etc.
 
 ## Technical Details
-- **Monolithic Application**: All modules will be contained within a single Spring Boot application, simplifying deployment and management.
+- **Monolithic Application Structure**: All modules will run within a single Spring Boot application.
 
-### Database Design
-- **User Table**: Fields: `user_id`, `name`, `email`, `phone`, `password`, `role`.
-- **Account Table**: Fields: `account_id`, `user_id`, `account_type`, `balance`, `created_at`.
-- **Transaction Table**: Fields: `transaction_id`, `account_id`, `transaction_type`, `amount`, `transaction_date`.
-- **Fraud Detection Table**: Fields: `fraud_id`, `transaction_id`, `risk_score`, `detected_at`.
+### Database and Versioning
+- **Liquibase**: Manages database schema migrations, ensuring consistent changes across environments.
+  
+### Database Tables:
+- **User Table**: `user_id`, `name`, `email`, `phone`, `password`, `role`
+- **Account Table**: `account_id`, `user_id`, `account_type`, `balance`, `created_at`
+- **Transaction Table**: `transaction_id`, `account_id`, `transaction_type`, `amount`, `transaction_date`
+- **Fraud Detection Table**: `fraud_id`, `transaction_id`, `risk_score`, `detected_at`
 
-### API Design and Sample Operations
-- **POST /api/accounts** - Creates a new account.
-- **GET /api/accounts/{accountId}** - Retrieves account details.
-- **POST /api/transactions/deposit** - Adds funds to an account.
-- **POST /api/transactions/withdrawal** - Withdraws funds from an account.
-- **POST /api/transactions/transfer** - Executes fund transfers.
+### Caching with Redis
+- **Session and Data Caching**: Improves response times for frequently accessed data, such as account balances and transaction history.
+- **Cache Configuration**: Expiration times for sensitive data to ensure accuracy.
 
-### Authentication & Authorization
-- **JSON Web Token (JWT)**: Manages authentication tokens for secure API access.
-- **Role-Based Access Control**: Differentiates permissions for users and admins.
+### Messaging with RabbitMQ
+- **Asynchronous Event Handling**:
+  - **Notifications**: Uses RabbitMQ to send notifications (e.g., SMS/email alerts for transactions).
+  - **Transaction Processing**: Queueing certain transactions to process asynchronously.
 
-### Security Measures
-- **TLS Encryption**: Ensures HTTPS API interactions.
-- **Rate Limiting**: Limits repeated requests to prevent abuse.
-- **Suspicious Activity Monitoring**: Detects and flags anomalies.
+#### Event Types:
+- **Transaction Events**: Triggers notifications and account updates.
+- **Security Events**: Alerts users to security issues.
+
+### Containerization with Docker
+- **Docker Compose**: Creates a local environment with PostgreSQL, Redis, and RabbitMQ containers.
+- **Consistent Deployment**: Docker images will allow seamless deployment across development, testing, and production environments.
+
+### API Endpoints:
+- **POST /api/accounts** - Creates new accounts.
+- **GET /api/accounts/{accountId}** - Retrieves account information.
+- **POST /api/transactions/deposit** - Deposits funds.
+- **POST /api/transactions/withdraw** - Withdraws funds.
+- **POST /api/transactions/transfer** - Transfers funds between accounts.
+
+### Endpoints for Admin:
+- **GET /api/admin/users** - Lists all users.
+- **GET /api/admin/reports** - Generates and retrieves reports.
+
+### Security
+- **JWT Authentication**: Provides secure token-based access to resources.
+- **Rate Limiting**: Limits repeated requests for API protection.
+- **Fraud Monitoring**: Alerts on suspicious activity.
 
 ### Performance Optimization
-- **Database Indexing**: Adds indexes on frequently queried fields, such as `transaction_date`.
-- **Batch Processing**: Groups multiple notifications to reduce API and database load.
+- **Caching with Redis**: Frequently accessed data cached for faster retrieval.
+- **Database Indexing**: Indexes on frequently accessed columns.
+- **Batch Processing**: Optimizes processing of notifications and other frequent tasks.
+
+## Setup and Installation
+### Configuration:
+- **Docker Compose**: Deploys PostgreSQL, Redis, RabbitMQ, and the Spring Boot application.
+- **Configure application.properties** with database, Redis, and RabbitMQ credentials.
+
+### Liquibase Database Migrations:
+- Use Liquibase scripts to manage and version database schema changes.
+
+### Run Instructions:
+1. Start containers with Docker Compose.
+2. Access Swagger documentation for API testing.
+
+## Testing Scenarios
+- **Unit and Integration Testing**: Covers CRUD operations, transaction handling, and notification triggers.
+- **Load Testing**: Ensures application stability and performance with high transaction volumes.
+- **Security Testing**: Verifies JWT handling, role-based access, and data protection.
