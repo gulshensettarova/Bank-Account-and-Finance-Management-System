@@ -107,3 +107,24 @@ Develop a secure, high-performance system enabling users to manage accounts, mon
 - **Unit and Integration Testing**: Covers CRUD operations, transaction handling, and notification triggers.
 - **Load Testing**: Ensures application stability and performance with high transaction volumes.
 - **Security Testing**: Verifies JWT handling, role-based access, and data protection.
+
+## Git Flow
+
+This project utilizes the Git Flow branching model to manage the development process. This model includes the following branches:
+
+1. **Development Branch (`develop`)**: This branch is the main area for developing new features. Developers write code here, and all new features are merged into this branch. The `develop` branch should always be kept active as all new development occurs here.
+
+2. **Pre-Production Branch (`pre-prod`)**: After the new changes are tested in the `develop` branch, they are merged into the `pre-prod` branch. This branch is used for final testing and quality assurance before the changes are released to production. A version of the application that closely resembles the production environment is created here.
+
+3. **Production Branch (`prod`)**: Once testing is complete, changes from the `pre-prod` branch are merged into the `prod` branch. This branch contains the code that is currently in production and available to users. The `prod` branch holds the final releases and only final code changes are made here.
+
+### Branch Strategy
+
+- **Feature Development**: Developers create new feature branches from the `develop` branch. Once the feature is complete, it is merged back into the `develop` branch.
+
+- **Testing**: Code in the `develop` branch is regularly tested. Once features are confirmed to work as expected, they are merged into the `pre-prod` branch.
+
+- **Release**: After final testing in the `pre-prod` branch, the code is merged into the `prod` branch, making it live for users.
+
+By following this Git Flow model, we manage our development process in a more efficient and structured way, ensuring the quality and reliability of the project.
+
